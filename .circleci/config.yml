@@ -44,12 +44,6 @@ commands:
           name: Alpine download workaround
           command: |
             sed -i "s|RUN apk|RUN sed -i 's/https/http/' /etc/apk/repositories \nRUN apk|g" docker-asciidoctor/Dockerfile
-      # Replace erd with erd-go, because erd is only available for x86
-      - run:
-          name: Remove erd
-          command: |
-            sed -i '/^# Haskell/,/^# Final image/s//# Install erd-go \(https:\/\/github.com\/kaishuu0123\/erd-go\) as replacement for erd \(https:\/\/github.com\/BurntSushi\/erd\)\n# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n\nFROM golang:alpine as erd-builder\nRUN apk add git \\\n    \&\& go install github.com\/kaishuu0123\/erd-go@latest\n\n# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n# Final image/' docker-asciidoctor/Dockerfile
-            sed -i 's/^COPY --from=erd-builder.*$/COPY --from=erd-builder \/go\/bin\/erd-go \/usr\/local\/bin\/erd/' docker-asciidoctor/Dockerfile
       # Downgrade OpenJDK from 17 to 8 because it is the last version available for armhf
       - run:
           name: Downgrade OpenJDK
