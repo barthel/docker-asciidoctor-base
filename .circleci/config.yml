@@ -44,11 +44,6 @@ commands:
           name: Alpine download workaround
           command: |
             sed -i "s|RUN apk|RUN sed -i 's/https/http/' /etc/apk/repositories \nRUN apk|g" docker-asciidoctor/Dockerfile
-      # Downgrade OpenJDK from 17 to 8 because it is the last version available for armhf
-      - run:
-          name: Downgrade OpenJDK
-          command: |
-            sed -i "s|openjdk17|openjdk8|g" docker-asciidoctor/Dockerfile
 
 jobs:
   build:
@@ -57,6 +52,7 @@ jobs:
       - setup
       - run:
           name: Build docker image
+          no_output_timeout: 1h
           command: |
             cd docker-asciidoctor/
             echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
@@ -67,7 +63,8 @@ jobs:
               TAG_NAME+=":latest"
             fi
             docker buildx build \
-              --platform linux/amd64,linux/arm/v7,linux/arm64 \
+              --platform linux/amd64,linux/arm64 \
               --tag ${TAG_NAME} \
               --build-arg BUILDKIT_MULTI_PLATFORM=1 \
+              --progress=plain \
               --push .
